@@ -1,0 +1,43 @@
+---
+- hosts: build
+  become: yes
+  tasks:
+  - name: Run "apt-get update"
+    apt:
+      update_cache: yes
+  - name: install common package
+    apt: name={{item}} state=present
+    with_items:
+      - docker.io
+      - python3
+      - python3-pip
+  - name: Install pip docker
+    pip:
+      name: docker      
+
+  - name: create directory
+    file: path=/tmp/build state=directory
+  - name: copy files
+    copy: src={{item}} dest=/tmp/build
+    with_items:
+      - Dockerfile
+      - Config.properties
+
+  - name: create directory docker login
+    file: path=/root/.docker state=directory
+  - name: docker login
+    copy: src=~/.docker/config.json dest=/root/.docker/config.json
+
+  - name: build and push docker image
+    docker_image:
+      source: build
+      build:
+        path: /tmp/build
+      name: masdp/final
+      tag: latest
+      push: yes
+
+
+  
+    
+

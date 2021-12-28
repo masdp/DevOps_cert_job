@@ -1,0 +1,37 @@
+---
+- hosts: stage
+  become: yes
+  gather_facts: no
+  
+  tasks:
+  - name: Run "apt-get update" 
+    apt:
+      update_cache: yes
+  - name: install common package
+    apt: name={{item}} state=present
+    with_items:
+      - docker.io
+      - python3
+      - docker-compose
+
+  - name: create directory
+    file: path=/tmp/stage state=directory
+
+  - name: copy files
+    copy: src={{item}} dest=/tmp/stage
+    with_items:
+        - docker-compose.yml
+
+  - name: Create and start services
+    docker_compose:
+      project_src: /tmp/stage
+    register: output
+
+
+
+
+
+     
+
+    
+
